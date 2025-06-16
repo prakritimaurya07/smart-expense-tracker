@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('TC.webp') no-repeat center center;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: fadeIn 1s ease-in-out;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .image-section {
+      flex: 1;
+      background: url('OIP.jpg') no-repeat center center;
+      background-size: cover;
+    }
+
+    .form-section {
+      flex: 1;
+      padding: 40px 30px;
+      animation: slideIn 1s ease-out;
+    }
+
+    .form-section h2 {
+      color: #4A00E0;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #4A00E0;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #3600b3;
+    }
+
+    p {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #4A00E0;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      color: red;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .image-section {
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="image-section"></div>
+
+    <div class="form-section">
+      <h2>Create Account</h2>
+      <input type="text" id="signupUsername" placeholder="Enter username"><br>
+      <input type="password" id="signupPassword" placeholder="Enter password"><br>
+      <button onclick="signup()">Sign Up</button>
+      <p>Already have an account? <a href="index.html">Login here</a></p>
+      <div class="message" id="messageBox"></div>
+    </div>
+  </div>
+
+  <script>
+    function signup() {
+      const username = document.getElementById('signupUsername').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const msgBox = document.getElementById('messageBox');
+
+      if (!username || !password) {
+        msgBox.textContent = '⚠️ Please fill in both username and password.';
+        return;
+      }
+
+      if (localStorage.getItem(username)) {
+        msgBox.textContent = '⚠️ Username already exists. Try logging in.';
+        return;
+      }
+
+      localStorage.setItem(username, JSON.stringify({ password }));
+      alert('✅ Signup successful! Please login.');
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>  
+<script>
+
+ 

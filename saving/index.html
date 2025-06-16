@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Expense Allocator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://images.unsplash.com/photo-1554224154-22dec7ec8818') no-repeat center center fixed;
+      background-size: cover;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: #121212;
+      color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transition: background 0.3s;
+    }
+
+    body.dark .container {
+      background: rgba(40, 40, 40, 0.95);
+    }
+
+    h1, h3 {
+      text-align: center;
+      color: #4A00E0;
+    }
+
+    input[type="number"], input[type="text"] {
+      padding: 10px;
+      width: 100%;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+      color: #000;
+    }
+
+    body.dark input[type="number"], body.dark input[type="text"] {
+      background: #333;
+      color: #f0f0f0;
+      border: 1px solid #888;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px 10px 0;
+      background-color: #4A00E0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .category {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      align-items: center;
+    }
+
+    body.dark .category {
+      background: #2a2a2a;
+    }
+
+    .alert {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .alert.warning { color: #c0392b; }
+    .alert.success { color: #27ae60; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+    <h1>Smart Expense Tracker</h1>
+    <input type="number" id="salary" placeholder="Enter your Monthly Salary" />
+    <input type="number" id="savingGoal" placeholder="Enter your Saving Goal" />
+    <button onclick="allocateExpenses()">Allocate Expenses</button>
+
+    <div id="categories"></div>
+
+    <h3>Add New Category</h3>
+    <input type="text" id="newCategory" placeholder="Category name (e.g. Internet)" />
+    <input type="number" id="newAmount" placeholder="Amount to allocate" />
+    <button onclick="addCategory()">Add Category</button>
+
+    <div id="summary" class="alert"></div>
+  </div>
+
+  <script>
+    let defaultCategories = [
+      { name: "Clothes", percent: 10 },
+      { name: "Food", percent: 15 },
+      { name: "Transportation", percent: 10 },
+      { name: "Electricity Bill", percent: 8 },
+      { name: "Water Bill", percent: 5 },
+      { name: "Child Fees", percent: 12 },
+      { name: "Rent", percent: 25 },
+      { name: "Others", percent: 15 }
+    ];
+    let customCategories = [];
+
+    function allocateExpenses() {
+      const salary = parseFloat(document.getElementById("salary").value);
+      const savingGoal = parseFloat(document.getElementById("savingGoal").value);
+
+      if (isNaN(salary) || isNaN(savingGoal)) {
+        alert("Please enter both Salary and Saving Goal.");
+        return;
+      }
+
+      const spendable = salary - savingGoal;
+      const categories = [...defaultCategories, ...customCategories];
+      const container = document.getElementById("categories");
+      container.innerHTML = "";
+      let totalExpense = 0;
+
+      categories.forEach((cat, index) => {
+        let amount = cat.amount !== undefined ? parseFloat(cat.amount) : (spendable * cat.percent / 100);
+        totalExpense += amount;
+        container.innerHTML += `
+          <div class="category">
+            <strong>${cat.name}</strong>
+            <input type="number" value="${amount.toFixed(2)}" onchange="editAmount(${index}, this.value)" />
+            <button onclick="removeCategory(${index})">Delete</button>
+          </div>
+        `;
+      });
+
+      const summary = document.getElementById("summary");
+
+      if (totalExpense > salary) {
+        const over = (totalExpense - salary).toFixed(2);
+        summary.innerHTML = `🚨 You have used ₹${over} from savings!`;
+        summary.className = "alert warning";
+      } else if (totalExpense > spendable) {
+        const usedSavings = (totalExpense - spendable).toFixed(2);
+        summary.innerHTML = `⚠️ You are using ₹${usedSavings} from your savings!`;
+        summary.className = "alert warning";
+      } else {
+        const actualSavings = (salary - totalExpense).toFixed(2);
+        if (actualSavings >= savingGoal) {
+          summary.innerHTML = `✅ You saved ₹${actualSavings}. Saving goal achieved!`;
+          summary.className = "alert success";
+        } else {
+          const shortfall = (savingGoal - actualSavings).toFixed(2);
+          summary.innerHTML = `⚠️ You are ₹${shortfall} short of your saving goal.`;
+          summary.className = "alert warning";
+        }
+      }
+    }
+
+    function addCategory() {
+      const name = document.getElementById("newCategory").value.trim();
+      const amount = parseFloat(document.getElementById("newAmount").value);
+      if (!name || isNaN(amount)) {
+        alert("Enter valid category name and amount.");
+        return;
+      }
+      customCategories.push({ name, amount });
+      document.getElementById("newCategory").value = "";
+      document.getElementById("newAmount").value = "";
+      allocateExpenses();
+    }
+
+    function removeCategory(index) {
+      if (index < defaultCategories.length) {
+        alert("Default categories cannot be deleted.");
+        return;
+      }
+      customCategories.splice(index - defaultCategories.length, 1);
+      allocateExpenses();
+    }
+
+    function editAmount(index, newValue) {
+      const amount = parseFloat(newValue);
+      if (isNaN(amount)) return;
+      if (index < defaultCategories.length) {
+        defaultCategories[index].percent = 0;
+        defaultCategories[index].amount = amount;
+      } else {
+        customCategories[index - defaultCategories.length].amount = amount;
+      }
+      allocateExpenses();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    function saveHistory() {
+      let history = JSON.parse(localStorage.getItem('expenseHistory')) || [];
+      history.push({ date: new Date().toLocaleDateString(), salary, savingGoal, totalExpense });
+      localStorage.setItem('expenseHistory', JSON.stringify(history));
+    }
+  </script> 
+</body>
+</html>     
